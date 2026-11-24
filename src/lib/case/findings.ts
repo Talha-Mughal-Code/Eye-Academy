@@ -17,6 +17,7 @@ export interface CaseFinding {
 
 export interface CaseFile {
   case_id: string
+  title?: string
   opening_prompt: string
   patient: Record<string, unknown>
   findings: CaseFinding[]

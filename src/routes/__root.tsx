@@ -22,16 +22,23 @@ function Nav() {
   const { user } = useAuth()
   return (
     <header className="nav">
-      <strong>Eye Academy Viva</strong>
-      <nav aria-label="Main">
-        <Link to="/">Home</Link>
-        <Link to="/viva">Viva</Link>
-        <Link to="/attempts">My attempts</Link>
-      </nav>
+      <Link to="/" className="brand" aria-label="Eye Academy Viva, home">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        Eye Academy Viva
+      </Link>
+      {user && (
+        <nav aria-label="Main">
+          <Link to="/viva" activeProps={{ className: 'active' }}>Viva</Link>
+          <Link to="/attempts" activeProps={{ className: 'active' }}>My attempts</Link>
+        </nav>
+      )}
       {user && (
         <span className="who">
-          {user.email}{' '}
-          <button type="button" onClick={() => signOut(auth())}>
+          <span>{user.email}</span>
+          <button type="button" className="small ghost" onClick={() => signOut(auth())}>
             Sign out
           </button>
         </span>
