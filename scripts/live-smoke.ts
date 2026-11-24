@@ -17,6 +17,9 @@ let out = ''
 let turns = 0
 let audioBytes = 0
 let sentQuestion = false
+let sentAt = 0
+let firstAudioMs: number | null = null
+let sawTool = false
 const done = new Promise<void>((resolve, reject) => {
   const timer = setTimeout(() => reject(new Error('timeout')), 45000)
   ai.live
@@ -30,6 +33,7 @@ const done = new Promise<void>((resolve, reject) => {
         onmessage: (m) => {
           if (m.setupComplete) console.log('setupComplete')
           if (m.toolCall?.functionCalls) {
+            sawTool = true
             const functionResponses = m.toolCall.functionCalls.map((fc) => {
               const args = (fc.args ?? {}) as Record<string, string>
               const result = fc.name === 'get_finding' ? lookupFinding(args as never) : getHistory(args as never)
@@ -39,18 +43,26 @@ const done = new Promise<void>((resolve, reject) => {
             session.sendToolResponse({ functionResponses })
           }
           const sc = m.serverContent
-          for (const p of sc?.modelTurn?.parts ?? []) if (p.inlineData?.data) audioBytes += p.inlineData.data.length
+          for (const p of sc?.modelTurn?.parts ?? [])
+            if (p.inlineData?.data) {
+              if (firstAudioMs === null && sentAt) firstAudioMs = performance.now() - sentAt
+              audioBytes += p.inlineData.data.length
+            }
           if (sc?.outputTranscription?.text) out += sc.outputTranscription.text
           // A turn that only issued a tool call completes with no audio; the readback follows in a new turn.
           if (sc?.turnComplete && audioBytes === 0) console.log('(turn complete with no audio: tool-call turn)')
           if (sc?.turnComplete && audioBytes > 0) {
             turns++
             console.log(`EXAMINER (turn ${turns}): ${out.trim()}  [audio b64 chars: ${audioBytes}]`)
+            console.log(`LATENCY text sent -> first audio chunk: ${firstAudioMs?.toFixed(0)} ms (tool call: ${sawTool ? 'yes' : 'no'})`)
+            firstAudioMs = null
+            sawTool = false
             out = ''
             audioBytes = 0
             if (!sentQuestion) {
               sentQuestion = true
               console.log(`TRAINEE (typed): ${question}`)
+              sentAt = performance.now()
               session.sendRealtimeInput({ text: question })
             } else {
               clearTimeout(timer)
@@ -63,6 +75,7 @@ const done = new Promise<void>((resolve, reject) => {
     .then((s) => {
       // setupComplete can arrive before connect() resolves, so start here.
       session = s
+      sentAt = performance.now()
       s.sendRealtimeInput({ text: CONTROL.start })
     }, reject)
 })
