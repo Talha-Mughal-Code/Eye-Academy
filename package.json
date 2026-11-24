@@ -10,7 +10,8 @@
     "emulators": "firebase emulators:start --only auth,firestore --project demo-eye-academy",
     "test:rules": "firebase emulators:exec --only auth,firestore --project demo-eye-academy \"vitest run tests/rules.test.ts --config vitest.rules.config.ts\"",
     "prep": "tsx scripts/prep.ts",
-    "check": "tsx scripts/check.ts"
+    "check": "tsx scripts/check.ts",
+    "smoke:live": "tsx --env-file=.env scripts/live-smoke.ts"
   },
   "dependencies": {
     "@google/genai": "^3.6.1",

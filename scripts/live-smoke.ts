@@ -1,7 +1,7 @@
 // Dev smoke test for the Live path without a microphone:
 // mint an ephemeral token, connect with it (as the browser does), send typed
 // text, execute tool calls with the pure functions, and print what comes back.
-// Usage: npx tsx --env-file=.env scripts/live-smoke.ts ["question"]
+// Usage: npm run smoke:live -- ["question"]
 import { GoogleGenAI } from '@google/genai'
 import { mintLiveToken } from '../src/lib/viva/mintToken'
 import { lookupFinding, getHistory } from '../src/lib/case/findings'

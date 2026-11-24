@@ -31,6 +31,8 @@ export type AvailableResult = {
   value: string | number
   unit: string | null
   method: string | null
+  /** Value with unit, from the same formatter as display (e.g. "58 mmHg"). */
+  valueText: string
   display: string
 }
 export type UnavailableResult = {
@@ -131,14 +133,19 @@ function shouldAppendUnit(value: string | number, unit: string | null): unit is 
   return !/[a-z]/i.test(value)
 }
 
+/** Value plus unit where appropriate (part of the single formatter). */
+export function formatValue(f: CaseFinding): string {
+  const v = f.value ?? ''
+  return shouldAppendUnit(v, f.unit) ? `${v} ${f.unit}` : String(v)
+}
+
 /** The ONE formatter: on-screen card text and spoken readback both use this string. */
 export function formatFinding(f: CaseFinding): string {
   const prefix = f.eye && EYE_WORD[f.eye] ? `${EYE_WORD[f.eye]} ${f.label.charAt(0).toLowerCase()}${f.label.slice(1)}` : f.label
   if (!f.available) {
     return `${prefix}: not available (${f.unavailable_reason ?? 'no reason recorded'})`
   }
-  const v = f.value ?? ''
-  const valueText = shouldAppendUnit(v, f.unit) ? `${v} ${f.unit}` : String(v)
+  const valueText = formatValue(f)
   return f.method ? `${prefix}: ${valueText} (${f.method})` : `${prefix}: ${valueText}`
 }
 
@@ -161,6 +168,7 @@ export function toResult(f: CaseFinding): SingleResult {
     value: f.value as string | number,
     unit: f.unit,
     method: f.method,
+    valueText: formatValue(f),
     display: formatFinding(f),
   }
 }
