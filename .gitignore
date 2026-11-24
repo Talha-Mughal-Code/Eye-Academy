@@ -1,0 +1,12 @@
+node_modules
+dist
+.output
+.vinxi
+.tanstack
+.env
+.env.local
+*.log
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+service-account*.json
